@@ -9,7 +9,7 @@ Made and tested for 9b9t.org
 Help greatly appreciated!
 
 ### How to use? <br>
-- Use this fork of Advanced Macros. 
+- Use this fork of Advanced Macros.  https://github.com/MajsterTynek/AdvancedMacros-WD_fix
 - Install mapmatica
 - Add all files from this repo to macros folder.
 
