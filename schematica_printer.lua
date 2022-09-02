@@ -4,9 +4,8 @@ function Printer:new(logger,inventory,restocker,goals,config,resources)
     local distance_to_dest = 0
     
     local resources = resources or { -- move this thing to config file
-        ["Black Carpet"]={ amount=512,shulkerName="Black Shulker Box"}, 
-        ["Light Gray Carpet"]={ amount=448,shulkerName="Light Gray Shulker Box"}, 
-        ["Gray Carpet"]={ amount=384,shulkerName="Gray Shulker Box"}, 
+        ["Light Gray Carpet"]={ amount=832,shulkerName="Light Gray Shulker Box"}, 
+        ["Gray Carpet"]={ amount=320,shulkerName="Gray Shulker Box"}, 
     }
     local printer = {logger=logger,inventory=inventory,goals=goals,config=config,resources=resources,distance_to_dest=distance_to_dest,placingTime=100,forwardTime=100,restocker=restocker}
     setmetatable(printer, self)
@@ -22,7 +21,7 @@ function Printer:start()
 
     self.logger:info("starting!")
 
-    Printer:setSettings() -- enables seppuku's nohunger and timer, not required 
+    self:setSettings() -- enables seppuku's nohunger and timer, not required 
 
     
     sleep(500)
@@ -81,7 +80,7 @@ function Printer:start()
         
     end
     self.logger:info("finished...")
-    Printer:finish()
+    self:finish()
 end
 function Printer:setCurrent(current)
     self.logger:info(("changing the current goal to : &b%d"):format(current))
@@ -151,7 +150,7 @@ function Printer:gotoCoords(x,z)
 end
 
 function Printer:finish()
-    Printer:stop()
+    self:stop()
     self.logger:info("AT THE GOAL!!!!")
 end
 
