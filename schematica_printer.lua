@@ -119,25 +119,24 @@ function Printer:speedSwitcher()
 
 end
 
-function Printer:gotoCoords(x,z)
+function Printer:gotoCoords(goal_x,goal_z)
     local currentPos = {getPlayerBlockPos()}
-    currentPos[2],currentPos[3] = currentPos[3], nil
-    self.distance_to_dest = math.sqrt(currentPos[1]-x^2 + currentPos[2]-z^2)
-    lookAt(x+0.5,1+0.5,z+0.5)
-    repeat  -- change this to while loop instead of repeat
-        if on == false then sleep(500) self.logger:fatal("stopped while on the way to goal!!!!") self:stop() return end
-        self:speedSwitcher()
+    self.distance_to_dest = math.sqrt((currentPos[1] - goal_x)^2 + (currentPos[3] - goal_z)^2) -- calc the distance from current position to the goal
+
+    lookAt(goal_x+0.5,1.5,goal_z+0.5)
+    while true do -- always int
+        if self.distance_to_dest == 0 then return end
+        if on == false then self.logger:fatal("stopped while on the way to goal!!!!") sleep(500) self:stop() return end -- abort if toggled off
+
+        self:speedSwitcher() -- adjust speed to distance from goal
 
         forward(self.forwardTime)
-        sleep(self.forwardTime + self.placingTime)
+        sleep(self.forwardTime + self.placingTime) -- delay between each move. To let the printer catch up with the player.
 
         currentPos = {getPlayerBlockPos()}
-        currentPos[2],currentPos[3] = currentPos[3], nil
-
-        self.distance_to_dest = math.sqrt(currentPos[1]-x^2 + currentPos[2]-z^2)
-        self.logger:message(string.format("&4going from: &3 %d %d, &4to: &3 %d %d, distance left: &b %d",currentPos[1],currentPos[2],x,z,self.distance_to_dest))
-
-    until self.distance_to_dest == 0
+        self.distance_to_dest = math.sqrt((currentPos[1] - goal_x)^2 + (currentPos[3] - goal_z)^2)
+        self.logger:message(string.format("&4going from: &3 %d %d, &4to: &3 %d %d, distance left: &b %d",currentPos[1],currentPos[3],goal_x,goal_z,self.distance_to_dest))
+    end
 end
 
 function Printer:finish()
