@@ -12,9 +12,6 @@ function Printer:new(logger,inventory,restocker,goals,config,resources)
     return printer
 end
 
-
-
-
 function Printer:start()
     self.logger:toggled_module("SCHEMATICA PRINTER",on)
 
@@ -31,10 +28,10 @@ function Printer:start()
             self.logger:info(( "Checking amount of %s" ):format(resource),1)
             local resourceCount = self.inventory:calc(resource)
             self.logger:info(("current amount of %s : &c(&b%d&4/&b%d&c)"):format(resource,info.amount,resourceCount))
-            if resourceCount < info.amount * 0.10 then -- here it checks, if it gets under 25% of the quantity it just goes back and refills it
-                self.logger:alert(( "not enought %s " ):format(resource),2)
+            if resourceCount < info.amount * 0.20 then  -- check if has enought resources
+                self.logger:alert(("not enought %s"):format(resource),2)
                 self.logger:info("restocking...")
-                if not Inventory:find(info.shulkerName) then self.logger:fatal("no avaiable shulkers!") break end
+                if not Inventory:find(info.shulkerName) then self.logger:fatal("no avaiable shulkers!")  break end -- add shulker restock. From premade stash at index 1 of goals? 
 
                 local playerPos = {getPlayerBlockPos()}
                 if not Restocker:checkSafe() then self.logger:fatal(" not safe, aborting ") break end
@@ -52,7 +49,7 @@ function Printer:start()
                 Restocker:dig({playerPos[1],playerPos[2]+1,playerPos[3]+1})
                 self.logger:info("mined shulker",1)
 
-                while true do
+                while true do -- picks up the shulker
                     sleep(1000)
                     local shulker = Restocker:getEntity("shulkerBox")
                     if not shulker then  break end
@@ -116,7 +113,6 @@ function Printer:speedSwitcher()
         self:setForwardTime(100)
         self:setPlacingTime(0)
     end
-
 end
 
 function Printer:gotoCoords(goal_x,goal_z)
