@@ -2,10 +2,9 @@ Printer = {}
 function Printer:new(logger,inventory,restocker,goals,config,resources)
     local config = config or {current=1}
     local distance_to_dest = 0
-    
     local resources = resources or { -- move this thing to config file
-        ["Light Gray Carpet"]={ amount=832,shulkerName="Light Gray Shulker Box"}, 
-        ["Gray Carpet"]={ amount=320,shulkerName="Gray Shulker Box"}, 
+        ["Light Gray Carpet"]={ amount=832,shulkerName="Light Gray Shulker Box"},
+        ["Black Carpet"]={ amount=384,shulkerName="Black Shulker Box"},
     }
     local printer = {logger=logger,inventory=inventory,goals=goals,config=config,resources=resources,distance_to_dest=distance_to_dest,placingTime=100,forwardTime=100,restocker=restocker}
     setmetatable(printer, self)
@@ -21,16 +20,14 @@ function Printer:start()
 
     self.logger:info("starting!")
 
-    self:setSettings() -- enables seppuku's nohunger and timer, not required 
-
-    
+    self:setSettings() -- enables seppuku's nohunger and timer, not required
     sleep(500)
     self.logger:info("started!")
 
-    for goalIndex=self.config.current ,#self.goals do 
-        if not on then return end 
+    for goalIndex=self.config.current ,#self.goals do
+        if not on then return end
 
-        for resource,info in pairs(self.resources) do 
+        for resource,info in pairs(self.resources) do
             self.logger:info(( "Checking amount of %s" ):format(resource),1)
             local resourceCount = self.inventory:calc(resource)
             self.logger:info(("current amount of %s : &c(&b%d&4/&b%d&c)"):format(resource,info.amount,resourceCount))
@@ -40,14 +37,12 @@ function Printer:start()
                 if not Inventory:find(info.shulkerName) then self.logger:fatal("no avaiable shulkers!") break end
 
                 local playerPos = {getPlayerBlockPos()}
-                if not Restocker:checkSafe() then self.logger:fatal(" not safe, aborting ") break end 
-                
+                if not Restocker:checkSafe() then self.logger:fatal(" not safe, aborting ") break end
                 repeat
                     self.logger:message("shulker is not placed!")
                     Restocker:place(info.shulkerName,{playerPos[1]+0.5,playerPos[2],playerPos[3]+1.5})
                     sleep(500)
-                until Restocker:confirmPlaced({playerPos[1],playerPos[2]+1,playerPos[3]+1}) 
-                
+                until Restocker:confirmPlaced({playerPos[1],playerPos[2]+1,playerPos[3]+1})
                 self.logger:info("placed a shulker",1)
                 Inventory:open({playerPos[1],playerPos[2]+1,playerPos[3]+1})
                 self.logger:info("opened a shulker",1)
@@ -61,7 +56,6 @@ function Printer:start()
                     sleep(1000)
                     local shulker = Restocker:getEntity("shulkerBox")
                     if not shulker then  break end
-                    
 
                     if Inventory:calcEmptySlots() == 0 then self.logger:alert("NO EMPTY SLOTS! cleaning inv...") Inventory:stackUnstacked() end
                     if Inventory:calcEmptySlots() == 0 then self.logger:alert(" STILL NO EMPTY SLOTS!!, DROPPING UNWANTED ITEMS ") Inventory:dropUnused() end
@@ -70,14 +64,12 @@ function Printer:start()
                     self:gotoCoords(math.floor(shulker["pos"][1]),math.floor(shulker["pos"][3]))
                 end
                 self.logger:info("shulker is in the Inventory!",1)
-            end 
+            end
         end
-        
         self:setCurrent(goalIndex)
         local goalX = self.goals[self.config.current][1]
         local goalZ = self.goals[self.config.current][2]
         self:gotoCoords(goalX,goalZ)
-        
     end
     self.logger:info("finished...")
     self:finish()
@@ -130,11 +122,10 @@ end
 function Printer:gotoCoords(x,z)
     local currentPos = {getPlayerBlockPos()}
     currentPos[2],currentPos[3] = currentPos[3], nil
-    self.distance_to_dest = math.sqrt( math.pow(currentPos[1]-x,2) + math.pow(currentPos[2]-z,2) )
+    self.distance_to_dest = math.sqrt(currentPos[1]-x^2 + currentPos[2]-z^2)
     lookAt(x+0.5,1+0.5,z+0.5)
     repeat  -- change this to while loop instead of repeat
         if on == false then sleep(500) self.logger:fatal("stopped while on the way to goal!!!!") self:stop() return end
-
         self:speedSwitcher()
 
         forward(self.forwardTime)
@@ -143,10 +134,10 @@ function Printer:gotoCoords(x,z)
         currentPos = {getPlayerBlockPos()}
         currentPos[2],currentPos[3] = currentPos[3], nil
 
-        self.distance_to_dest = math.sqrt( math.pow(currentPos[1]-x,2) + math.pow(currentPos[2]-z,2) )
+        self.distance_to_dest = math.sqrt(currentPos[1]-x^2 + currentPos[2]-z^2)
         self.logger:message(string.format("&4going from: &3 %d %d, &4to: &3 %d %d, distance left: &b %d",currentPos[1],currentPos[2],x,z,self.distance_to_dest))
 
-    until self.distance_to_dest == 0 
+    until self.distance_to_dest == 0
 end
 
 function Printer:finish()
@@ -164,7 +155,7 @@ function Printer:stop()
     say(".t nohunger")
     say(".t timer")
 
-    configFile= io.open("config.json", "w")
+    local configFile= io.open("config.json", "w")
     configFile:write(json.encode(self.config))
     configFile:close()
 
